@@ -10,7 +10,8 @@ Sistem Presensi Sekolah berbasis web (Laravel) dan mobile (Flutter) untuk mengel
 ### Key Features:
 - ✅ **Landing Page Sekolah**: Website profil dengan artikel, berita, dan informasi sekolah
 - ✅ **Presensi Siswa**: Diinput oleh GURU (bukan siswa yang absen sendiri)
-- ✅ **Presensi Guru & Orang Tua**: Semua role (kecuali Super Admin) dapat absen via mobile app
+- ✅ **Presensi Guru & Staff**: Via mobile dengan Face Recognition + GPS
+- ✅ **Riwayat Kelas Siswa**: Tracking naik kelas & pindah kelas otomatis ⭐
 - ✅ **Foto Kelas Wajib**: Bukti mengajar untuk setiap input presensi siswa
 - ✅ **Radius GPS**: Validasi lokasi saat absen (configurable di web)
 - ✅ **Artikel & Berita**: Konten untuk landing page sekolah
@@ -185,6 +186,11 @@ Features:
    ├─ Data Siswa
    ├─ Data Guru & Staff
    ├─ Data Kelas
+   ├─ Kelola Kelas Siswa ⭐
+   │  ├─ Naik Kelas Massal
+   │  ├─ Pindah Kelas Individual
+   │  ├─ View Riwayat Kelas
+   │  └─ Mutasi Siswa
    ├─ Jadwal Pelajaran
    └─ Tahun Ajaran
 ✅ Presensi
@@ -403,6 +409,7 @@ Features:
 ```
 📊 Dashboard
    ├─ Status Kehadiran Anak Hari Ini
+   ├─ Kelas Saat Ini & Riwayat ⭐
    ├─ Kalender Kehadiran Bulan Ini
    ├─ Statistik Kehadiran (Grafik)
    │  ├─ Hadir: 85%
@@ -412,7 +419,10 @@ Features:
    └─ Pengumuman untuk Orang Tua
 👶 Profil Anak
    ├─ Data Pribadi Anak
-   ├─ Kelas & Wali Kelas
+   ├─ Kelas Saat Ini & Wali Kelas ⭐
+   ├─ Riwayat Kelas (Timeline) ⭐
+   │  ├─ 2024/2025: Kelas 1A (Selesai)
+   │  └─ 2025/2026: Kelas 2A (Aktif)
    ├─ Nomor Induk Siswa
    └─ Foto Anak
 ✅ Kehadiran Anak
@@ -1875,6 +1885,269 @@ Features:
    └─ Form pendaftaran / contact
 ```
 
+### 5. Workflow Naik Kelas Massal (Admin) ⭐
+```
+Skenario: Akhir tahun ajaran 2024/2025, siswa Kelas 1A naik ke Kelas 2A
+
+1. Admin login web
+2. Menu: Data Master → Kelola Kelas Siswa
+3. Tab: Naik Kelas Massal
+4. Form Input:
+   ├─ Tahun Ajaran Sumber: 2024/2025
+   ├─ Kelas Sumber: Kelas 1A (30 siswa)
+   ├─ Tahun Ajaran Tujuan: 2025/2026
+   └─ Kelas Tujuan: Kelas 2A
+5. [Preview Siswa]
+   └─ Table showing all 30 students
+6. [Execute Naik Kelas]
+7. System Processing:
+   For each student:
+   ├─ Update riwayat lama: status → 'selesai', tanggal_selesai → today
+   ├─ Update siswa.kelas_id → Kelas 2A
+   └─ Create riwayat baru: Kelas 2A, status → 'aktif'
+8. Success notification
+9. Generate report: "30 siswa berhasil naik kelas"
+10. Auto-notify parents via WhatsApp/Email
+```
+
+### 6. Workflow Pindah Kelas Individual (Admin) ⭐
+```
+Skenario: Ahmad pindah dari Kelas 2A ke Kelas 2B (mid-year)
+
+1. Admin: Data Master → Kelola Kelas Siswa
+2. Tab: Pindah Kelas Individual
+3. Search siswa: "Ahmad" (NIS: 2024001)
+4. Current info displayed:
+   ├─ Nama: Ahmad Fauzi
+   ├─ Kelas Sekarang: Kelas 2A
+   ├─ Wali Kelas: Ibu Siti
+   └─ Riwayat: 1A (2024) → 2A (2025, aktif)
+5. Form Pindah Kelas:
+   ├─ Kelas Tujuan: [Dropdown] Kelas 2B
+   ├─ Tanggal Pindah: [15 Nov 2025]
+   ├─ Alasan: [Permintaan orang tua]
+   └─ Catatan: [Optional]
+6. [Validasi] - Check if target class has capacity
+7. [Proses Pindah]
+8. System:
+   ├─ Update riwayat lama (2A): status → 'pindah', tanggal_selesai
+   ├─ Update siswa.kelas_id → Kelas 2B
+   ├─ Create riwayat baru (2B): status → 'aktif'
+   └─ Notify: Old wali kelas, New wali kelas, Parent
+9. Success: "Ahmad berhasil dipindahkan ke Kelas 2B"
+```
+
+### 7. Workflow Orang Tua Lihat Riwayat Kelas ⭐
+```
+1. Buka website sekolah
+2. Homepage:
+   ├─ Hero banner "Cerdas dan Berkarakter Qur'ani"
+   ├─ Banner pop-up: "Pendaftaran Siswa Baru 2025" (Public)
+   ├─ Scroll: Profil sekolah
+   ├─ Statistik: 72 Guru, 300+ Murid
+   └─ Artikel terbaru (3 preview)
+3. Klik menu "Tentang Kami"
+   ├─ Profil lengkap
+   ├─ Visi & Misi (5+6 point)
+   ├─ Fasilitas (grid foto)
+   └─ Galeri kegiatan
+4. Klik menu "SDM"
+   └─ Table guru & staff (pagination)
+5. Klik menu "Artikel"
+   └─ Browse artikel by category
+6. Tertarik → Klik "Registrasi"
+   └─ Form pendaftaran / contact
+```
+
+---
+
+## 📚 RELATED DOCUMENTATION
+
+### **Student Class History Management** ⭐
+
+Sistem ini mendukung pengelolaan riwayat kelas siswa untuk menangani kasus:
+- ✅ **Naik Kelas**: Siswa pindah ke tingkat berikutnya (Kelas 1A → Kelas 2A)
+- ✅ **Pindah Kelas**: Siswa pindah rombel (Kelas 2A → Kelas 2B)
+- ✅ **Mutasi**: Siswa pindah sekolah
+
+**Struktur Data:**
+```
+Table: siswa
+- kelas_id: Selalu menunjuk ke kelas AKTIF saat ini
+
+Table: riwayat_kelas_siswa
+- Menyimpan SEMUA riwayat kelas siswa
+- Status: aktif (1 record), selesai, pindah, mutasi
+```
+
+**Workflow Naik Kelas:**
+```
+Skenario: Ahmad naik dari Kelas 1A ke Kelas 2A
+
+1. Tahun Ajaran 2024/2025:
+   siswa.kelas_id = Kelas 1A
+   riwayat_kelas_siswa:
+   - kelas_id: Kelas 1A
+   - status: aktif
+   - tanggal_mulai: 2024-07-01
+   - tanggal_selesai: null
+
+2. Naik Kelas (2025-06-30):
+   Admin/TU melakukan "Naik Kelas Massal"
+   
+   Step 1: Update record lama
+   riwayat_kelas_siswa (record lama):
+   - status: aktif → selesai
+   - tanggal_selesai: 2025-06-30
+   
+   Step 2: Update siswa.kelas_id
+   siswa.kelas_id = Kelas 1A → Kelas 2A
+   
+   Step 3: Create record baru
+   riwayat_kelas_siswa (record baru):
+   - siswa_id: Ahmad
+   - kelas_id: Kelas 2A
+   - tahun_ajaran_id: 2025/2026
+   - status: aktif
+   - tanggal_mulai: 2025-07-01
+   - tanggal_selesai: null
+
+3. Tahun Ajaran 2025/2026:
+   siswa.kelas_id = Kelas 2A
+   
+   Riwayat lengkap Ahmad:
+   [2024/2025] Kelas 1A (status: selesai)
+   [2025/2026] Kelas 2A (status: aktif) ← current
+```
+
+**Workflow Pindah Kelas:**
+```
+Skenario: Siti pindah dari Kelas 2A ke Kelas 2B (mid-year)
+
+1. Kondisi Awal:
+   siswa.kelas_id = Kelas 2A
+   riwayat_kelas_siswa:
+   - kelas_id: Kelas 2A
+   - status: aktif
+
+2. Proses Pindah Kelas:
+   
+   Update record lama:
+   - status: aktif → pindah
+   - tanggal_selesai: 2024-11-15
+   - keterangan: "Pindah ke Kelas 2B atas permintaan orang tua"
+   
+   Update siswa:
+   - siswa.kelas_id = Kelas 2B
+   
+   Create record baru:
+   - kelas_id: Kelas 2B
+   - status: aktif
+   - tanggal_mulai: 2024-11-16
+```
+
+**Features di Web Admin:**
+```
+📊 Menu: Data Master → Kelola Kelas Siswa
+
+1. NAIK KELAS MASSAL
+   - Pilih tahun ajaran
+   - Pilih kelas sumber (misal: Kelas 1A)
+   - Pilih kelas tujuan (misal: Kelas 2A)
+   - Preview siswa yang akan naik
+   - [Execute Naik Kelas]
+   - System auto-update:
+     ├─ siswa.kelas_id
+     ├─ riwayat (status: selesai)
+     └─ riwayat baru (status: aktif)
+
+2. PINDAH KELAS INDIVIDUAL
+   - Search siswa
+   - Pilih kelas tujuan
+   - Tanggal pindah
+   - Alasan pindah
+   - [Simpan]
+   - System auto-create riwayat
+
+3. VIEW RIWAYAT KELAS
+   - Per siswa: Lihat semua kelas yang pernah dijalani
+   - Timeline view dengan status
+   - Export history ke PDF
+```
+
+**Query Examples:**
+```sql
+-- Get current class of student
+SELECT s.nama_lengkap, k.nama as kelas_sekarang
+FROM siswa s
+JOIN kelas k ON s.kelas_id = k.id
+WHERE s.id = 1;
+
+-- Get full class history of student
+SELECT 
+  s.nama_lengkap,
+  k.nama as kelas,
+  ta.nama as tahun_ajaran,
+  rk.tanggal_mulai,
+  rk.tanggal_selesai,
+  rk.status
+FROM riwayat_kelas_siswa rk
+JOIN siswa s ON rk.siswa_id = s.id
+JOIN kelas k ON rk.kelas_id = k.id
+JOIN tahun_ajaran ta ON rk.tahun_ajaran_id = ta.id
+WHERE s.id = 1
+ORDER BY rk.tanggal_mulai DESC;
+
+-- Get all students in specific class with their history
+SELECT 
+  s.nama_lengkap,
+  COUNT(rk.id) as jumlah_pindah_kelas
+FROM siswa s
+LEFT JOIN riwayat_kelas_siswa rk ON s.id = rk.siswa_id
+WHERE s.kelas_id = 5  -- Kelas 2A
+GROUP BY s.id;
+
+-- Get attendance across all classes
+SELECT 
+  s.nama_lengkap,
+  k.nama as kelas,
+  ps.tanggal,
+  ps.status
+FROM presensi_siswa ps
+JOIN siswa s ON ps.siswa_id = s.id
+JOIN kelas k ON ps.kelas_id = k.id
+WHERE s.id = 1
+ORDER BY ps.tanggal DESC;
+```
+
+**Reports & Analytics:**
+```
+Laporan yang Memanfaatkan Riwayat Kelas:
+
+1. Laporan Kehadiran Per Tahun Ajaran
+   - Aggregate attendance per year per student
+   - Show class transitions
+   - Compare performance across classes
+
+2. Laporan Tracking Siswa
+   - Full student journey from Kelas 1 to 6
+   - Performance trends
+   - Behavior trends
+
+3. Dashboard Orang Tua
+   - Current class info
+   - Historical performance
+   - "Anak Anda telah menyelesaikan Kelas 1A 
+      dengan kehadiran 95%"
+```
+
+**Important Notes:**
+- ⚠️ Only ONE record per student can have `status = 'aktif'`
+- ✅ `siswa.kelas_id` always reflects CURRENT class
+- ✅ All historical data preserved in `riwayat_kelas_siswa`
+- ✅ Presensi data always references correct class at time of attendance
+- ✅ Parent dashboard shows current class + full history
+
 ---
 
 ## 📚 RELATED DOCUMENTATION
@@ -1929,3 +2202,36 @@ Features:
 - Secure file upload validation
 - Face data encryption
 - GPS location encryption
+
+---
+
+### 7. Workflow Orang Tua Lihat Riwayat Kelas ⭐
+```
+1. Orang Tua login web dashboard
+2. Banner pop-up: "Pengumuman Libur Semester"
+3. Dashboard shows:
+   ├─ "Ahmad - Kelas 2A" (current)
+   └─ "Kehadiran Hari Ini: Hadir ✓"
+4. Klik "Profil Anak"
+5. Section: Riwayat Kelas (Timeline View)
+   ┌─────────────────────────────────────┐
+   │ 📚 RIWAYAT KELAS                   │
+   ├─────────────────────────────────────┤
+   │                                     │
+   │ ● 2025/2026 - Kelas 2A (Aktif)     │
+   │   Jul 2025 - Sekarang              │
+   │   Wali Kelas: Ibu Ratna            │
+   │   Kehadiran: 95% (18/19 hari)      │
+   │   [Lihat Detail]                   │
+   │                                     │
+   │ ○ 2024/2025 - Kelas 1A (Selesai)   │
+   │   Jul 2024 - Jun 2025              │
+   │   Wali Kelas: Ibu Siti             │
+   │   Kehadiran: 96% (193/201 hari)    │
+   │   [Lihat Detail] [Download Rapor]  │
+   │                                     │
+   └─────────────────────────────────────┘
+6. Klik "Lihat Detail" pada Kelas 1A
+7. View full attendance report for that year
+8. View academic performance (if integrated)
+9. Download PDF report per class/year
